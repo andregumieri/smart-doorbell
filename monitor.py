@@ -15,7 +15,7 @@ gpio.setup(27, gpio.OUT)
 
 
 def doorbell(which, holding=False, previous_alert=0):
-    labels = {'front': 'front door', 'back': 'back door'}
+    labels = {'front': 'sala', 'back': 'cozinha'}
 
     if(holding == True or time.time() - previous_alert < 15):
         return previous_alert
@@ -36,6 +36,7 @@ def alert_init():
 
 
 
+
 holding = {'front': False, 'back': False}
 previous_alert = {'front': 0, 'back': 0}
 ios = {23: 'back', 24: 'front'}
@@ -45,17 +46,28 @@ alert_init()
 
 while True:
     pressing = False
+    pressed = {'front': gpio.input(24), 'back': gpio.input(23)}
 
-    for io in ios:
-        slug = ios[io]
+    # Cozinha
+    slug = 'back'
+    if(pressed[slug] == 1):
+        previous_alert[slug] = doorbell(slug, holding[slug], previous_alert[slug])
+        holding[slug] = True
+        pressing = True
+    else:
+        holding[slug] = False
 
-        if(gpio.input(io) == 1):
-            previous_alert[slug] = doorbell(slug, holding[slug], previous_alert[slug])
-            holding[slug] = True
-            pressing = True
-        else:
-            holding[slug] = False
 
+    # Sala
+    slug = 'front'
+    if(pressed[slug] == 1):
+        previous_alert[slug] = doorbell(slug, holding[slug], previous_alert[slug])
+        holding[slug] = True
+        pressing = True
+    else:
+        holding[slug] = False
+
+    time.sleep(0.2)
 
 gpio.cleanup()
 exit()
